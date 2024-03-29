@@ -171,25 +171,24 @@ start_node = (start_y, start_x, theta_i)  # Assuming the robot starts from the b
 goal_node = (goal_y, goal_x)
 path = a_star(start_node, goal_node, map, clearance, robot_radius)
 
-path_iteration = 0
+
+# Draw circles for initial and goal positions
+cv2.circle(map, (start_x, start_y), 30, (0, 100, 100), -1)  # Green circle for initial position
+cv2.circle(map, (goal_x, goal_y), 30, (0, 0, 255), -1)   # Red circle for goal position
+
+
 # Print the path
+path_iteration = 0
 if path:
     print("Path found:", path)
-    for node in path:
+for i in range(len(path) - 1):
         # Change color to black for nodes in the path
-        map[node[0], node[1]] = [255, 255, 255]
+        cv2.line(map, (path[i][1], path[i][0]), (path[i+1][1], path[i+1][0]), (0, 100, 255), 5)
         if path_iteration % 10 == 0:
             frame = cv2.cvtColor(map.astype(np.uint8), cv2.COLOR_RGB2BGR)
             out.write(frame)
         path_iteration += 1
 
-    # Draw circles for initial and goal positions
-    cv2.circle(map, (start_x, start_y), 30, (0, 100, 100), -1)  # Green circle for initial position
-    cv2.circle(map, (goal_x, goal_y), 30, (0, 0, 255), -1)   # Red circle for goal position
-
-    # Draw the full path on the map
-    for i in range(len(path) - 1):
-        cv2.line(map, (path[i][1], path[i][0]), (path[i+1][1], path[i+1][0]), (0, 100, 255), 2)
 
 else:
     print("No path found.")
