@@ -9,11 +9,10 @@ map = np.zeros((2000, 6000, 3))
 red = np.array([255, 0, 0])
 yellow = np.array([255, 255, 0])
 black = np.array([0, 0, 0])
-clearance = int(input("Enter the clearance value:"))
+clearance = int(input("Enter the clearance: "))
 robot_radius = 20
-RPM1 = int(input("Enter the RPM1 value:"))
-RPM2 = int(input("Enter the RPM2 value:"))
-
+RPM1 = int(input("Enter the RPM1: "))
+RPM2 = int(input("Enter the RPM2: "))
 
 # Generating boundary clearance
 cv2.rectangle(map, pt1=(0000, 0000), pt2=(6000, 2000), color=(255, 255, 0), thickness=-1)
@@ -27,7 +26,6 @@ cv2.rectangle(map, pt1=(2500 - (clearance + robot_radius), 1000 - (clearance + r
 cv2.rectangle(map, pt1=(1500, 0), pt2=(1750, 1000), color=(255, 0, 0), thickness=-1)
 cv2.rectangle(map, pt1=(2500, 1000), pt2=(2750, 2000), color=(255, 0, 0), thickness=-1)
 
-
 # Generating circle clearance
 center_circle = (4200, 800)   
 radius_circle = 600 + (clearance + robot_radius)
@@ -37,7 +35,6 @@ cv2.circle(map, center_circle, radius_circle, (255, 255, 0), -1)
 center_circle = (4200, 800)   
 radius_circle = 600
 cv2.circle(map, center_circle, radius_circle, (255, 0, 0), -1)
-
 
 # Define the video file path
 video_name = 'D:\Desktop\A_star_scan.mp4'
@@ -49,100 +46,7 @@ plt.title("Initial Map 'red = obstacle' 'yellow = clearance + robot radius'\n\n"
 plt.show()
 
 
-
-
-# Define the action set
-action_set = [(0, RPM1), (RPM1, 0), (RPM1, RPM1), (0, RPM2), (RPM2, 0), (RPM2, RPM2), (RPM1, RPM2), (RPM2, RPM1)]
-
-# Define the heuristic function (Euclidean distance)
-def heuristic(node, goal):
-    return np.sqrt((goal[0] - node[0]) ** 2 + (goal[1] - node[1]) ** 2)
-
-
-def a_star(start, goal, map, clearance, robot_radius):
-
-    # Define the robot's radius and other parameters
-    r = 0.038
-    L = 0.354
-    dt = 10
-    open_list = []
-    closed_list = set()
-
-    heapq.heappush(open_list, (0, start))  # 0 being the priority for start
-    came_from = {}  # parent nodes dictionary
-    cost_so_far = {start: 0}  # node: cost to reach dictionary
-    path_iteration = 0
-    theta_tolerance = 30  # Define the tolerance for theta in degrees
-
-    while open_list:
-        current_cost, current_node = heapq.heappop(open_list)
-
-        # # Check if the current node's (x, y) matches the goal, and theta is within the tolerance range
-        # if (abs(current_node[0] - goal[0]) <= 1 and abs(current_node[1] - goal[1]) <= 1 and
-        #     min(abs(current_node[2] - goal[2]), 360 - abs(current_node[2] - goal[2])) <= theta_tolerance):
-
-        # Check if the current node's (x, y) matches the goal, and theta is within the tolerance range
-        if (abs(current_node[0] - goal[0]) <= 1 and abs(current_node[1] - goal[1]) <= 1):
-
-            # Reached the goal (within tolerance), reconstruct the path
-            path = []
-            node = current_node
-            while node != start:
-                path.append(node)
-                node = came_from[node]
-            path.append(start)
-            path.reverse()
-            return path
-
-        closed_list.add(current_node)
-        # for move in actions_set:
-            # next_x = current_node[0] + move[0]
-            # next_y = current_node[1] + move[1]
-            # next_theta = (current_node[2] + move[2]) % 360
-
-        for move in action_set:
-
-            ul, ur = move
-            next_theta = theta_i + (r / L) * (ur - ul) * dt
-            if (next_theta == 0):
-                next_theta = 0
-            elif (next_theta == 360):
-                next_theta = 360
-            else :
-                next_theta = next_theta % 360
-            next_x = current_node[0] + 0.5*r * (ul + ur) * np.cos(np.radians(next_theta)) * dt
-            next_y = current_node[1] +  0.5*r * (ul + ur) * np.sin(np.radians(next_theta)) * dt
-
-            next_node = (
-                int(round(next_x)),
-                int(round(next_y)),
-                int(next_theta)
-            )
-
-            if (clearance <= next_node[0] < (map.shape[0] - robot_radius)) and (clearance <= next_node[1] < (map.shape[1] - robot_radius)) and (
-                    next_node[:2] not in closed_list) and (np.array_equal(map[next_node[0], next_node[1]], black)):
-
-                new_cost = cost_so_far[current_node] + move[0] + move[1]  # Use the cost directly from the action set
-                heuristic_cost = heuristic(next_node, goal)  # Calculate heuristic cost
-                priority = new_cost + heuristic_cost  # Update priority with heuristic cost
-
-                if next_node not in cost_so_far or new_cost < cost_so_far[next_node]:
-                    cost_so_far[next_node] = new_cost
-                    heapq.heappush(open_list, (priority, next_node))
-                    came_from[next_node] = current_node  # Store the parent node with the correct theta value
-                    # Update the color of the scanned pixel to green
-                    map[next_node[0], next_node[1]] = [0, 255, 0]  # Green color
-                    print(f"Scanning pixel: {next_node}")
-                    if path_iteration % 10000 == 0:
-                        frame = cv2.cvtColor(map.astype(np.uint8), cv2.COLOR_RGB2BGR)
-                        out.write(frame)
-                    path_iteration += 1
-
-    return None  # No path found
-
-
-
-# Prompting user for the start coordinates and initial theta
+# Prompting user for the start coordinates and initial theta <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 while True:
     start_x = int(input("\nEnter your start x-coordinate: "))
     start_y = int(input("Enter your start y-coordinate: "))
@@ -163,7 +67,7 @@ while True:
         print("Your start coordinates are correct, please proceed ahead.")
         break
 
-# Prompting user for the goal coordinates and goal theta
+# Prompting user for the goal coordinates <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 while True:
     goal_x = int(input("\nEnter your goal x-coordinate: "))
     goal_y = int(input("Enter your goal y-coordinate: "))
@@ -185,6 +89,110 @@ while True:
         print("Goal coordinate has the following pixel values: ", goal_pixel_value)
         break
 
+
+
+
+
+# Define action set and cost calculation
+# thetas = [-60, -30, 0, 30, 60]  # List of theta values
+    
+#------------------
+
+# Define the action set
+    
+def possible_moves(tup , step_size, RPM1, RPM2):
+    start_x , start_y, theta_i = tup
+
+    moves = []
+    actions_set = []
+    actions_set.append((0, RPM1), (RPM1, 0), (0, RPM2), (RPM2, 0), (RPM1, RPM2), (RPM2, RPM1), (RPM1, RPM1), (RPM2, RPM2))
+
+    for action in actions_set:
+        ul,ur= action
+        r = 0.038
+        L = 0.354
+        dt = 10
+
+        theta_n = theta_i + (r / L) * (ur - ul) * dt
+        if (theta_n == 0):
+            theta_n = 0
+        elif (theta_n == 360):
+            theta_n = 360
+        else :
+            thetan = thetan % 360
+        next_node[0] = start_x + 0.5*r * (ul + ur) * np.cos(np.radians(thetan)) * dt
+        next_node[1] = start_y +  0.5*r * (ul + ur) * np.sin(np.radians(thetan)) * dt
+            
+        moves.append((next_node[0],next_node[1], theta_n, ul, ur))
+
+
+    return moves
+
+
+#------------------------------
+# Define the heuristic function (Euclidean distance)
+def heuristic(node, goal):
+    return np.sqrt((goal[0] - node[0]) ** 2 + (goal[1] - node[1]) ** 2)
+
+def a_star(start, goal, map, clearance, robot_radius):
+    open_list = []
+    closed_list = set()
+    heapq.heappush(open_list, (0, start))  # 0 being the priority for start
+    came_from = {}  # parent nodes dictionary
+    cost_so_far = {start: 0}  # node: cost to reach dictionary
+    path_iteration = 0
+    theta_tolerance = 30  # Define the tolerance for theta in degrees
+
+    while open_list:
+        current_cost, current_node = heapq.heappop(open_list)
+        # Check if the current node's (x, y) matches the goal, and theta is within the tolerance range
+        if (abs(current_node[0] - goal[0]) <= 1 and abs(current_node[1] - goal[1]) <= 1):
+
+            # Reached the goal (within tolerance), reconstruct the path
+            path = []
+            node = current_node
+            while node != start:
+                path.append(node)
+                node = came_from[node]
+            path.append(start)
+            path.reverse()
+            return path
+
+        closed_list.add(current_node)
+        for move in actions_set:
+            next_x = current_node[0] + move[0]
+            next_y = current_node[1] + move[1]
+            next_theta = (current_node[2] + move[2]) % 360
+
+            next_node = (
+                int(round(next_x)),
+                int(round(next_y)),
+                int(next_theta)
+            )
+
+            if (clearance <= next_node[0] < (map.shape[0] - robot_radius)) and (clearance <= next_node[1] < (map.shape[1] - robot_radius)) and (
+                    next_node[:2] not in closed_list) and (np.array_equal(map[next_node[0], next_node[1]], black)):
+
+                new_cost = cost_so_far[current_node] + move[3]  # Use the cost directly from the action set
+                heuristic_cost = heuristic(next_node, goal)  # Calculate heuristic cost
+                priority = new_cost + heuristic_cost  # Update priority with heuristic cost
+
+                if next_node not in cost_so_far or new_cost < cost_so_far[next_node]:
+                    cost_so_far[next_node] = new_cost
+                    heapq.heappush(open_list, (priority, next_node))
+                    came_from[next_node] = current_node  # Store the parent node with the correct theta value
+                    # Update the color of the scanned pixel to green
+                    map[next_node[0], next_node[1]] = [0, 255, 0]  # Green color
+                    print(f"Scanning pixel: {next_node}")
+                    if path_iteration % 10000 == 0:
+                        frame = cv2.cvtColor(map.astype(np.uint8), cv2.COLOR_RGB2BGR)
+                        out.write(frame)
+                    path_iteration += 1
+
+    return None  # No path found
+
+
+
 # Start time
 time_start = time.time()
 
@@ -205,7 +213,7 @@ if path:
     print("Path found:", path)
 for i in range(len(path) - 1):
         # Change color to black for nodes in the path
-        cv2.line(map, (path[i][1], path[i][0]), (path[i+1][1], path[i+1][0]), (0, 100, 255), 5)
+        cv2.line(map, (path[i][1], path[i][0]), (path[i+1][1], path[i+1][0]), (0, 100, 255), 10)
         if path_iteration % 10 == 0:
             frame = cv2.cvtColor(map.astype(np.uint8), cv2.COLOR_RGB2BGR)
             out.write(frame)
