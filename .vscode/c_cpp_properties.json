@@ -1,0 +1,26 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/opt/ros/humble/include/**",
+        "/home/kashif/Desktop/Submission zip/662_p1/src/mobilerobot/include/**",
+        "/home/kashif/Desktop/Submission zip/group_28/include/**",
+        "/home/kashif/Desktop/a_star_ROS/A_star/turtlebot3_project3/include/**",
+        "/home/kashif/Desktop/git new/A_star/turtlebot3_project3/include/**",
+        "/home/kashif/Desktop/src/final_project/include/**",
+        "/home/kashif/Desktop/src/group28_final/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}
